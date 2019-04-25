@@ -23,8 +23,12 @@ linux_job_{{ job.command }}:
     {%- if job.dayweek is defined %}
     - dayweek: '{{ job.dayweek }}'
     {%- endif %}
+    {%- if job.user in system.get('user', {}).keys() %}
+    - require:
+      - user: system_user_{{ job.user }}
+    {%- endif %}
   {%- else %}
-  job.absent:
+  cron.absent:
     - name: {{ job.command }}
   {%- endif %}
 

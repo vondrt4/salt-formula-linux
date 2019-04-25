@@ -1,5 +1,7 @@
 applications:
 - linux
+classes:
+- service.linux.support
 parameters:
   linux:
     system:
@@ -11,6 +13,7 @@ parameters:
           home: /root
       timezone: Europe/Prague
       cluster: default
+      purge_repos: false
     network:
       enabled: true
       hostname: ${linux:system:name}

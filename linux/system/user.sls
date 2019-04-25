@@ -1,9 +1,19 @@
 {%- from "linux/map.jinja" import system with context %}
 {%- if system.enabled %}
 
+include:
+  - linux.system.group
+
 {%- for name, user in system.user.iteritems() %}
 
 {%- if user.enabled %}
+
+{%- set requires = [] %}
+{%- for group in user.get('groups', []) %}
+  {%- if group in system.get('group', {}).keys() %}
+    {%- do requires.append({'group': 'system_group_'+group}) %}
+  {%- endif %}
+{%- endfor %}
 
 system_user_{{ name }}:
   user.present:
@@ -25,6 +35,7 @@ system_user_{{ name }}:
   {%- if user.uid is defined and user.uid %}
   - uid: {{ user.uid }}
   {%- endif %}
+  - require: {{ requires|yaml }}
 
 system_user_home_{{ user.home }}:
   file.directory:
@@ -37,7 +48,7 @@ system_user_home_{{ user.home }}:
 
 {%- if user.get('sudo', False) %}
 
-/etc/sudoers.d/90-salt-user-{{ name }}:
+/etc/sudoers.d/90-salt-user-{{ name|replace('.', '-') }}:
   file.managed:
   - source: salt://linux/files/sudoer
   - template: jinja
@@ -48,7 +59,13 @@ system_user_home_{{ user.home }}:
     user_name: {{ name }}
   - require:
     - user: system_user_{{ name }}
+  - check_cmd: /usr/sbin/visudo -c -f
 
+{%- else %}
+
+/etc/sudoers.d/90-salt-user-{{ name|replace('.', '-') }}:
+  file.absent
+  
 {%- endif %}
 
 {%- else %}
@@ -61,7 +78,7 @@ system_user_home_{{ user.home }}:
   file.absent:
   - name: {{ user.home }}
 
-/etc/sudoers.d/90-salt-user-{{ name }}:
+/etc/sudoers.d/90-salt-user-{{ name|replace('.', '-') }}:
   file.absent
 
 {%- endif %}

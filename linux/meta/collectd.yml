@@ -1,0 +1,46 @@
+local_plugin:
+  linux_network_netlink:
+    plugin: netlink
+    template: linux/files/collectd_netlink.conf
+    ignore_selected: false
+    {%- if 'linux_netlink.ls' in salt.keys() %}
+    interfaces:
+    {%- for interface_name in salt['linux_netlink.ls']() %}
+    - {{ interface_name }}
+    {%- endfor %}
+    {%- endif %}
+  linux_system_cpu:
+    plugin: cpu
+  linux_system_entropy:
+    plugin: entropy
+  linux_system_load:
+    plugin: load
+  linux_system_contextswitch:
+    plugin: contextswitch
+  linux_system_memory:
+    plugin: memory
+  linux_system_uptime:
+    plugin: uptime
+  linux_system_users:
+    plugin: users
+  linux_storage_df:
+    plugin: df
+    template: linux/files/collectd_df.conf
+    ignore_selected: True
+    fs_types:
+    - rootfs
+    - sysfs
+    - proc
+    - devtmpfs
+    - devpts
+    - tmpfs
+    - fusectl
+    - cgroup
+  linux_storage_disk:
+    plugin: disk
+    template: linux/files/collectd_disk.conf
+    ignore_selected: True
+  linux_storage_swap:
+    plugin: swap
+    template: linux/files/collectd_swap.conf
+    report_bytes: True

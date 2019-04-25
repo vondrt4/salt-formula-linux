@@ -7,7 +7,7 @@
 
 system_group_{{ group_name }}:
   group.present:
-  - name: {{ group.name }}
+  - name: {{ group.get('name', group_name) }}
   {%- if group.system is defined and group.system %}
   - system: True
   {%- endif %}
@@ -26,3 +26,4 @@ system_group_{{ group_name }}:
 {%- endfor %}
 
 {%- endif %}
+

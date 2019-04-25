@@ -1,0 +1,13 @@
+agent:
+  input:
+    cpu:
+      percpu: true
+      totalcpu: true
+    disk:
+    diskio:
+    kernel:
+    net:
+    mem:
+    processes:
+    swap:
+    system:

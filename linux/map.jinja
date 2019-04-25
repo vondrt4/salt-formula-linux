@@ -5,30 +5,57 @@
         'user': {},
         'group': {},
         'job': {},
+        'limit': {},
+        'locale': {},
+        'motd': {},
+        'env': {},
+        'profile': {},
+        'proxy': {},
         'repo': {},
         'package': {},
+        'autoupdates': {
+          'pkgs': []
+         },
         'selinux': 'permissive',
         'ca_certs_dir': '/usr/local/share/ca-certificates',
     },
     'Debian': {
-        'pkgs': ['python-apt','vim'],
+        'pkgs': ['python-apt', 'apt-transport-https', 'libmnl0'],
         'utc': true,
         'user': {},
         'group': {},
         'job': {},
+        'limit': {},
+        'locale': {},
+        'motd': {},
+        'env': {},
+        'profile': {},
+        'proxy': {},
         'repo': {},
         'package': {},
+        'autoupdates': {
+             'pkgs': ['unattended-upgrades']
+         },
         'selinux': 'permissive',
         'ca_certs_dir': '/usr/local/share/ca-certificates',
     },
     'RedHat': {
-        'pkgs': ['policycoreutils', 'policycoreutils-python', 'vim-enhanced', 'telnet', 'wget'],
+        'pkgs': ['policycoreutils', 'policycoreutils-python', 'telnet', 'wget'],
         'utc': true,
         'user': {},
         'group': {},
         'job': {},
+        'limit': {},
+        'locale': {},
+        'motd': {},
+        'env': {},
+        'profile': {},
+        'proxy': {},
         'repo': {},
         'package': {},
+        'autoupdates': {
+             'pkgs': []
+         },
         'selinux': 'permissive',
         'ca_certs_dir': '/usr/local/share/ca-certificates',
     },
@@ -43,7 +70,11 @@
     'broadcast',
     'master',
     'miimon',
+    'ovs_ports',
+    'ovs_bridge',
     'mode',
+    'port_type',
+    'peer',
     'lacp-rate',
     'dns-search',
     'up_cmds',
@@ -52,6 +83,14 @@
     'down_cmds',
     'pre_down_cmds',
     'post_down_cmds',
+    'maxwait',
+    'stp',
+    'gro',
+    'lacp_rate',
+    'ad_select',
+    'downdelay',
+    'updelay',
+    'hashing-algorithm',
 ] %}
 
 {% set network = salt['grains.filter_by']({
@@ -68,32 +107,36 @@
            'host': 'none',
         },
         'host': {},
+        'dhclient_config': '/etc/dhcp/dhclient.conf',
     },
     'Debian': {
         'hostname_file': '/etc/hostname',
         'bridge_pkgs': ['bridge-utils'],
-        'ovs_pkgs': ['openvswitch-switch'],
+        'ovs_pkgs': ['openvswitch-switch', 'bridge-utils'],
+        'dpdk_pkgs': ['dpdk', 'dpdk-dev', 'dpdk-dkms', 'dpdk-igb-uio-dkms', 'dpdk-rte-kni-dkms'],
         'network_manager': False,
         'interface': {},
         'interface_params': interface_params,
         'bridge': 'none',
         'proxy': {
-           'host': 'none',
+           'host': 'none'
         },
         'host': {},
+        'dhclient_config': '/etc/dhcp/dhclient.conf',
     },
     'RedHat': {
         'bridge_pkgs': ['bridge-utils'],
-        'ovs_pkgs': ['openvswitch-switch'],
+        'ovs_pkgs': ['openvswitch-switch', 'bridge-utils'],
         'hostname_file': '/etc/sysconfig/network',
         'network_manager': False,
         'interface': {},
         'interface_params': interface_params,
         'bridge': 'none',
         'proxy': {
-           'host': 'none',
+           'host': 'none'
         },
         'host': {},
+        'dhclient_config': '/etc/dhcp/dhclient.conf',
     },
 }, grain='os_family', merge=salt['pillar.get']('linux:network')) %}
 
@@ -101,16 +144,70 @@
     'Arch': {
         'mount': {},
         'swap': {},
-        'multipath': False,
+        'lvm': {},
+        'loopback': {},
+        'nfs': {
+             'pkgs': ['nfs-utils']
+         },
+        'multipath': {
+             'enabled': False,
+             'pkgs': ['multipath-tools', 'multipath-tools-boot'],
+             'service': ''
+         },
     },
     'Debian': {
         'mount': {},
         'swap': {},
-        'multipath_pkgs': ['multipath-tools']
+        'lvm': {},
+        'loopback': {},
+        'nfs': {
+             'pkgs': ['nfs-common']
+         },
+        'multipath': {
+             'enabled': False,
+             'pkgs': ['multipath-tools', 'multipath-tools-boot'],
+             'service': 'multipath-tools'
+         },
+        'lvm_pkgs': ['lvm2'],
     },
     'RedHat': {
         'mount': {},
         'swap': {},
-        'multipath': False,
+        'lvm': {},
+        'loopback': {},
+        'nfs': {
+             'pkgs': ['nfs-utils']
+         },
+        'multipath': {
+             'enabled': False,
+             'pkgs': [],
+             'service': 'multipath'
+         },
     },
 }, grain='os_family', merge=salt['pillar.get']('linux:storage')) %}
+
+
+{% set monitoring = salt['grains.filter_by']({
+    'default': {
+        'zombie': {
+              'warn': 3,
+              'crit': 7,
+        },
+        'procs': {
+              'warn': 5000,
+              'crit': 10000,
+        },
+        'load': {
+              'warn': '6,4,2',
+              'crit': '12,8,4',
+        },
+        'swap': {
+              'warn': '50%',
+              'crit': '20%',
+        },
+        'disk': {
+              'warn': '15%',
+              'crit': '5%',
+        },
+    },
+}, grain='os_family', merge=salt['pillar.get']('linux:monitoring')) %}
